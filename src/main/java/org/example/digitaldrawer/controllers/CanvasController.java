@@ -5,6 +5,7 @@ import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.input.MouseEvent;
 import org.example.digitaldrawer.buttons.PenSizeDropDownList;
+import org.example.exceptions.WrongPenSizeException;
 
 /**
  * Класс, отвечающий за холст пользователя
@@ -36,7 +37,7 @@ public class CanvasController {
             @Override
             public void handle(MouseEvent mouseEvent) {
                 PenSizeDropDownList.getPenSize().valueProperty().addListener((observable, oldValue, newValue) -> {
-                    brushSize = newValue.doubleValue();
+                    brushSize = Double.parseDouble(newValue);
                 });
                 setBrushSize(gc, brushSize);
                 gc.lineTo(mouseEvent.getX(), mouseEvent.getY());
@@ -51,7 +52,9 @@ public class CanvasController {
      * @param size - желаемый размер кисти
      */
     public void setBrushSize(GraphicsContext gc, double size) {
-
+        if(size > 100){
+            throw new WrongPenSizeException("Wrong pen size!");
+        }
         gc.setLineWidth(size);
     }
 
