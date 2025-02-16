@@ -17,17 +17,16 @@ import org.example.digitaldrawer.buttons.PenSizeDropDownList;
 import org.example.digitaldrawer.errors.ErrorTypes;
 import org.example.digitaldrawer.panels.ErrorPanel;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 /**
  * Класс, отвечающий за холст пользователя
  */
-public abstract class CanvasController extends Canvas {
-    private double brushSize = 5.0;
-    private GraphicsContext gc;
-    private SimpleDoubleProperty zoom = new SimpleDoubleProperty(1.0);
-    private List<PathElement> drawnShapes = new ArrayList<>();
+public class CanvasController extends Canvas {
+    private double brushSize = 6.0;
+    private final GraphicsContext gc;
+    private final SimpleDoubleProperty zoom = new SimpleDoubleProperty(1.0);
+    private final LinkedHashMap<PathElement, Double> drawnShapes = new LinkedHashMap<>();
 
     public CanvasController() {
         this(0, 0);
@@ -36,19 +35,19 @@ public abstract class CanvasController extends Canvas {
     public CanvasController(double width, double height) {
         super(width, height);
         this.setOnScroll(zoomHandler);
-        this.zoomProperty().addListener(o -> redrawCanvas());
         gc = this.getGraphicsContext2D();
+        this.zoomProperty().addListener(o -> redrawCanvas());
     }
 
     EventHandler<ScrollEvent> zoomHandler = new EventHandler<ScrollEvent>() {
         @Override
         public void handle(ScrollEvent scrollEvent) {
-            CanvasController zoomedCanvas = (CanvasController) scrollEvent.getSource();
-            GraphicsContext gc = zoomedCanvas.getGraphicsContext2D();
+//            CanvasController zoomedCanvas = (CanvasController) scrollEvent.getSource();
+//            GraphicsContext gc = zoomedCanvas.getGraphicsContext2D();
             Affine affine = gc.getTransform();
             double zoom = affine.getMxx() + scrollEvent.getDeltaY() / 800;
-            zoomedCanvas.setZoom(zoom);
-            zoomedCanvas.redrawCanvas();
+            setZoom(zoom);
+            redrawCanvas();
         }
     };
 
@@ -60,14 +59,17 @@ public abstract class CanvasController extends Canvas {
             @Override
             public void handle(MouseEvent mouseEvent) {
                 PenSizeDropDownList.getPenSize().valueProperty().addListener((observable, oldValue, newValue) -> {
-                    brushSize = Double.parseDouble(newValue);
+                    brushSize = setBrushSize(gc, Double.parseDouble(newValue));
                 });
+                if(brushSize == 6.0){
+                    PenSizeDropDownList.getPenSize().getSelectionModel().select(0);
+                }
                 double[] transformedCoords = transformCoordinates(mouseEvent.getX(), mouseEvent.getY());
                 double transformedX = transformedCoords[0];
                 double transformedY = transformedCoords[1];
-                setBrushSize(gc, brushSize);
+
                 gc.beginPath();
-                drawnShapes.add(new MoveTo(transformedX, transformedY));
+                drawnShapes.put(new MoveTo(transformedX, transformedY), brushSize);
                 gc.moveTo(transformedX, transformedY);
                 gc.stroke();
             }
@@ -84,7 +86,7 @@ public abstract class CanvasController extends Canvas {
                 double[] transformedCoords = transformCoordinates(mouseEvent.getX(), mouseEvent.getY());
                 double transformedX = transformedCoords[0];
                 double transformedY = transformedCoords[1];
-                drawnShapes.add(new LineTo(transformedX, transformedY));
+                drawnShapes.put(new LineTo(transformedX, transformedY), brushSize);
                 gc.lineTo(transformedX, transformedY);
                 gc.stroke();
             }
@@ -97,11 +99,13 @@ public abstract class CanvasController extends Canvas {
      * @param gc   - объект, необходимый для отображения нарисованных пользователем фигур
      * @param size - желаемый размер кисти
      */
-    public void setBrushSize(GraphicsContext gc, double size) {
+    public double setBrushSize(GraphicsContext gc, double size) {
         if (size > 100) {
             ErrorPanel.setAlertTitle(ErrorTypes.WRONG_PEN_SIZE);
+            return 6.0;
         }
         gc.setLineWidth(size);
+        return size;
     }
 
     /**
@@ -128,7 +132,7 @@ public abstract class CanvasController extends Canvas {
         gc.clearRect(0, 0, w, h);
         double z = getZoom();
         gc.setTransform(z, 0, 0, z, (w - w * z) / 2.0, (h - h * z) / 2.0);
-        setBrushSize(gc, brushSize);
+//        setBrushSize(gc, brushSize);
         paint(gc);
     }
 
@@ -162,7 +166,7 @@ public abstract class CanvasController extends Canvas {
         }
     }
 
-    public List<PathElement> getDrawnShapes() {
+    public LinkedHashMap<PathElement, Double> getDrawnShapes() {
         return drawnShapes;
     }
 
@@ -171,5 +175,23 @@ public abstract class CanvasController extends Canvas {
      *
      * @param gc
      */
-    public abstract void paint(GraphicsContext gc);
-}
+    public void paint(GraphicsContext gc){
+            gc.setStroke(Color.BLACK);
+            gc.beginPath();
+            for(Map.Entry<PathElement, Double> element : this.getDrawnShapes().entrySet()){
+//                setBrushSize(gc, element.getValue());
+                double savedBrushSize = element.getValue();
+                gc.setLineWidth(savedBrushSize);
+                if (element.getKey() instanceof MoveTo) {
+                    MoveTo move = (MoveTo) element.getKey();
+                    gc.moveTo(move.getX(), move.getY());
+                } else if (element.getKey() instanceof LineTo) {
+
+                    LineTo line = (LineTo) element.getKey();
+                    gc.lineTo(line.getX(), line.getY());
+                    gc.stroke();
+                }
+            }
+        }
+    }
+

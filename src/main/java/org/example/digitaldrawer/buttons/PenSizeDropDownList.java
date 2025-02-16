@@ -8,7 +8,7 @@ import javafx.scene.control.ComboBox;
  * Класс, предназначенный для кнопки выбора размера кисти
  */
 public final class PenSizeDropDownList {
-    private static ObservableList<String> options =  FXCollections.observableArrayList(
+    private static final ObservableList<String> options =  FXCollections.observableArrayList(
             "6",
             "8",
             "10",
@@ -21,7 +21,7 @@ public final class PenSizeDropDownList {
             "48",
             "72"
     );
-    private static ComboBox<String> penSize = new ComboBox<>(options);
+    private static final ComboBox<String> penSize = new ComboBox<>(options);
     /**
      * Геттер
      * @return возвращает размер шрифта
@@ -29,5 +29,7 @@ public final class PenSizeDropDownList {
     public static ComboBox<String> getPenSize() {
         return penSize;
     }
+
+
 
 }
