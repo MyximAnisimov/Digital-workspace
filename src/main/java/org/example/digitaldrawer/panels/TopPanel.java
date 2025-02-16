@@ -25,22 +25,16 @@ public final class TopPanel {
         hbox.setStyle(BACKGROUND_COLOR);
         UnaryOperator<TextFormatter.Change> filter = change -> {
             String text = change.getText();
-            if (text.matches("[0-9]*")) { // Разрешаем только цифры
+            if (text.matches("[0-9]*")) {
                 return change;
             }
-            return null; // Отклоняем ввод
+            return null;
         };
-        try {
             TextFormatter<String> textFormatter = new TextFormatter<>(filter);
             PenSizeDropDownList.getPenSize().getEditor().setTextFormatter(textFormatter);
             PenSizeDropDownList.getPenSize().setEditable(true);
             PenSizeDropDownList.getPenSize().setPrefSize(100, 20);
             hbox.getChildren().add(PenSizeDropDownList.getPenSize());
-        }
-        catch(WrongThreadException e){
-            System.err.println("Wrong pen size!");
-        }
-
         return hbox;
     }
 
