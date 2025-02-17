@@ -3,17 +3,12 @@ package org.example.digitaldrawer;
 import javafx.application.Application;
 import javafx.scene.Group;
 import javafx.scene.Scene;
-import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.paint.Color;
-import javafx.scene.shape.LineTo;
-import javafx.scene.shape.MoveTo;
-import javafx.scene.shape.PathElement;
 import javafx.stage.Stage;
 import org.example.digitaldrawer.controllers.CanvasController;
 import org.example.digitaldrawer.panels.TopPanel;
 
-import java.util.Map;
 
 public class HelloApplication extends Application {
     @Override
@@ -30,7 +25,6 @@ public class HelloApplication extends Application {
         root.getChildren().add(border);
         stage.setScene(s);
         stage.show();
-//        canvasController.redrawCanvas();
     }
 
 
