@@ -3,6 +3,7 @@ package org.example.digitaldrawer.panels;
 import javafx.geometry.Insets;
 import javafx.scene.control.TextFormatter;
 import javafx.scene.layout.HBox;
+import org.example.digitaldrawer.buttons.ChooseBrushButton;
 import org.example.digitaldrawer.buttons.PenSizeDropDownList;
 
 import java.util.function.UnaryOperator;
@@ -13,7 +14,7 @@ import java.util.function.UnaryOperator;
 public final class TopPanel {
     //System.Logger logger = System.getLogger("org.example.digitaldrawer");
     private static final String BACKGROUND_COLOR = "-fx-background-color: #336699;";
-
+    private static final String ICON_URL_PATH = "C:\\Users\\Maxim\\Digital-workspace\\999740.png";
     /**
      * Метод, создающий верхнюю панель с кнопками
      * @return - возвращает верхнюю панель
@@ -30,11 +31,14 @@ public final class TopPanel {
             }
             return null;
         };
+        ChooseBrushButton chooseBrushButton = new ChooseBrushButton(ICON_URL_PATH);
+        chooseBrushButton.pressMouseResponse();
             TextFormatter<String> textFormatter = new TextFormatter<>(filter);
             PenSizeDropDownList.getPenSize().getEditor().setTextFormatter(textFormatter);
             PenSizeDropDownList.getPenSize().setEditable(true);
             PenSizeDropDownList.getPenSize().setPrefSize(100, 20);
             hbox.getChildren().add(PenSizeDropDownList.getPenSize());
+            hbox.getChildren().add(chooseBrushButton.getBrushButton());
         return hbox;
     }
 
