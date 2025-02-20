@@ -4,15 +4,14 @@ import javafx.event.EventHandler;
 import javafx.scene.control.Button;
 import javafx.scene.effect.DropShadow;
 import javafx.scene.image.Image;
-import javafx.scene.image.ImageView;
 import javafx.scene.input.MouseEvent;
-
-import java.util.Objects;
+import org.example.digitaldrawer.controllers.CanvasStateController;
+import org.example.digitaldrawer.states.CanvasStates;
 
 /**
  * Класс, отвечающий за кнопку выбора режима кисти
  */
-public class ChooseBrushButton {
+public class ChooseBrushButton implements PressOnMouseEvent{
     private Image image;
     private Button brushButton;
     DropShadow shadow = new DropShadow();
@@ -27,10 +26,12 @@ public class ChooseBrushButton {
     /**
      * Подсветка кнопки, сигнализирующая о её нажатии
      */
+    @Override
     public void pressMouseResponse(){
         brushButton.addEventHandler(MouseEvent.MOUSE_CLICKED, new EventHandler<MouseEvent>() {
             @Override
             public void handle(MouseEvent mouseEvent) {
+                CanvasStateController.setState(CanvasStates.BRUSH_MODE.getStateName());
                 brushButton.setEffect(shadow);
             }
         });

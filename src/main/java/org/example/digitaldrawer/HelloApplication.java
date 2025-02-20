@@ -7,7 +7,11 @@ import javafx.scene.layout.BorderPane;
 import javafx.scene.paint.Color;
 import javafx.stage.Stage;
 import org.example.digitaldrawer.controllers.CanvasController;
+import org.example.digitaldrawer.controllers.CanvasStateController;
+import org.example.digitaldrawer.errors.ErrorTypes;
+import org.example.digitaldrawer.panels.ErrorPanel;
 import org.example.digitaldrawer.panels.TopPanel;
+import org.example.digitaldrawer.states.CanvasStates;
 
 
 public class HelloApplication extends Application {
@@ -21,6 +25,7 @@ public class HelloApplication extends Application {
         CanvasController canvasController = new CanvasController(1000, 500);
         canvasController.pressMouseResponse();
         canvasController.dragMouseResponse();
+
         canvasController.createRectangleContainer(root);
         root.getChildren().add(canvasController);
         root.getChildren().add(border);

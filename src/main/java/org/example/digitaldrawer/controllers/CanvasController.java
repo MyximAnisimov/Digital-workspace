@@ -19,6 +19,7 @@ import javafx.scene.transform.NonInvertibleTransformException;
 import org.example.digitaldrawer.buttons.PenSizeDropDownList;
 import org.example.digitaldrawer.errors.ErrorTypes;
 import org.example.digitaldrawer.panels.ErrorPanel;
+import org.example.digitaldrawer.states.CanvasStates;
 import org.w3c.dom.css.Rect;
 
 import java.util.*;
@@ -69,18 +70,25 @@ public class CanvasController extends Canvas {
         this.addEventHandler(MouseEvent.MOUSE_PRESSED, new EventHandler<MouseEvent>() {
             @Override
             public void handle(MouseEvent mouseEvent) {
+                if(CanvasStateController.getState().equals(CanvasStates.BRUSH_MODE.getStateName())){
+                    if(brushSize == DEFAULT_BRUSH_SIZE){
+                        PenSizeDropDownList.getPenSize().getSelectionModel().select(0);
+                    }
+                    double[] transformedCoords = transformCoordinates(mouseEvent.getX(), mouseEvent.getY());
+                    double transformedX = transformedCoords[0];
+                    double transformedY = transformedCoords[1];
 
-                if(brushSize == DEFAULT_BRUSH_SIZE){
-                    PenSizeDropDownList.getPenSize().getSelectionModel().select(0);
+                    gc.beginPath();
+                    drawnShapes.put(new MoveTo(transformedX, transformedY), brushSize);
+                    gc.moveTo(transformedX, transformedY);
+                    gc.stroke();
                 }
-                double[] transformedCoords = transformCoordinates(mouseEvent.getX(), mouseEvent.getY());
-                double transformedX = transformedCoords[0];
-                double transformedY = transformedCoords[1];
+                else if(CanvasStateController.getState().equals(CanvasStates.DRAG_AND_DROP_MODE.getStateName())){
+//                    ErrorPanel.setAlertTitle(ErrorTypes.WRONG_PEN_SIZE);
+//            return DEFAULT_BRUSH_SIZE;
 
-                gc.beginPath();
-                drawnShapes.put(new MoveTo(transformedX, transformedY), brushSize);
-                gc.moveTo(transformedX, transformedY);
-                gc.stroke();
+                    System.out.println("drag and drop mode");
+                }
             }
         });
     }
@@ -92,12 +100,19 @@ public class CanvasController extends Canvas {
         this.addEventHandler(MouseEvent.MOUSE_DRAGGED, new EventHandler<MouseEvent>() {
             @Override
             public void handle(MouseEvent mouseEvent) {
-                double[] transformedCoords = transformCoordinates(mouseEvent.getX(), mouseEvent.getY());
-                double transformedX = transformedCoords[0];
-                double transformedY = transformedCoords[1];
-                drawnShapes.put(new LineTo(transformedX, transformedY), brushSize);
-                gc.lineTo(transformedX, transformedY);
-                gc.stroke();
+                if(CanvasStateController.getState().equals(CanvasStates.BRUSH_MODE.getStateName())){
+                    double[] transformedCoords = transformCoordinates(mouseEvent.getX(), mouseEvent.getY());
+                    double transformedX = transformedCoords[0];
+                    double transformedY = transformedCoords[1];
+                    drawnShapes.put(new LineTo(transformedX, transformedY), brushSize);
+                    gc.lineTo(transformedX, transformedY);
+                    gc.stroke();
+                }
+                else if(CanvasStateController.getState().equals(CanvasStates.DRAG_AND_DROP_MODE.getStateName())){
+//                    ErrorPanel.setAlertTitle(ErrorTypes.WRONG_PEN_SIZE);
+////            return DEFAULT_BRUSH_SIZE;
+                    System.out.println("drag and drop mode");
+                }
             }
         });
     }
