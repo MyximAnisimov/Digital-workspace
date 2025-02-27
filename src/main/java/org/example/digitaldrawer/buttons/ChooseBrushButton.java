@@ -17,7 +17,7 @@ public class ChooseBrushButton implements PressOnMouseEvent{
     DropShadow shadow = new DropShadow();
 
     public ChooseBrushButton(String imageUrl) {
-        this.brushButton = new Button();
+        this.brushButton = new Button("Brush");
 //        this.image = new Image(Objects.requireNonNull(getClass().getResourceAsStream("999740.png")));
 //        this.brushButton.setGraphic(new ImageView(image));
 

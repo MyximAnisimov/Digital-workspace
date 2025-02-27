@@ -2,17 +2,24 @@ package org.example.digitaldrawer.controllers;
 
 import javafx.event.EventHandler;
 import javafx.scene.Group;
+import javafx.scene.Scene;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
+import javafx.scene.control.TextArea;
+import javafx.scene.control.TextField;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.LineTo;
 import javafx.scene.shape.MoveTo;
+import javafx.scene.text.Text;
 import javafx.scene.transform.Affine;
 import javafx.scene.transform.NonInvertibleTransformException;
 import org.example.digitaldrawer.buttons.PenSizeDropDownList;
 import org.example.digitaldrawer.states.CanvasStates;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -23,9 +30,9 @@ public class CanvasController extends Canvas {
     private static final double DEFAULT_BRUSH_SIZE = 6.0;
     private double brushSize = DEFAULT_BRUSH_SIZE;
     private final GraphicsContext gc;
-
+    private final Group root;
     private final List<StrokeShape> strokes = new ArrayList<>();
-
+    private final List<Text> allTextes = new ArrayList<>();
     private StrokeShape currentStroke = null;
 
     private StrokeShape selectedStroke = null;
@@ -35,13 +42,13 @@ public class CanvasController extends Canvas {
     CanvasRedrawer canvasRedrawer;
 
     public CanvasController() {
-        this(0, 0);
+        this(0, 0, null);
     }
 
-    public CanvasController(double width, double height) {
+    public CanvasController(double width, double height, Group root) {
         super(width, height);
         gc = this.getGraphicsContext2D();
-
+        this.root = root;
         canvasRedrawer = new CanvasRedrawer(strokes, gc);
         this.setOnScroll(canvasRedrawer.getZoomHandler());
 
@@ -90,6 +97,32 @@ public class CanvasController extends Canvas {
                     }
                 }
             }
+            else if(CanvasStateController.getState().equals(CanvasStates.TEXT_MODE.getStateName())){
+                TextField newTextField = new TextField();
+                newTextField.requestFocus();
+                newTextField.setLayoutX(mouseEvent.getX());
+                newTextField.setLayoutY(mouseEvent.getY());
+                newTextField.setOnAction(event->{
+                    String text = newTextField.getText();
+                    double x = newTextField.getLayoutX();
+                    double y = newTextField.getLayoutY();
+                    gc.setFill(Color.TRANSPARENT);
+                    gc.fillText(text, x, y);
+                });
+
+                newTextField.focusedProperty().addListener((observable, oldValue, newValue) ->{
+                    if(!newValue){
+                        String text = newTextField.getText();
+                        double x = newTextField.getLayoutX();
+                        double y = newTextField.getLayoutY();
+                        gc.setFill(Color.TRANSPARENT);
+                        gc.fillText(text, x, y);
+
+                    }
+                });
+                WriteTextController.addTextOnCanvas(root, newTextField);
+
+            }
         });
     }
 
@@ -124,6 +157,7 @@ public class CanvasController extends Canvas {
                     canvasRedrawer.redrawCanvas();
                 }
             }
+
         });
     }
 

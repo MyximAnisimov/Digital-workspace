@@ -4,6 +4,7 @@ import javafx.geometry.Insets;
 import javafx.scene.control.TextFormatter;
 import javafx.scene.layout.HBox;
 import org.example.digitaldrawer.buttons.ChooseBrushButton;
+import org.example.digitaldrawer.buttons.ChooseTextButton;
 import org.example.digitaldrawer.buttons.DragAndDropButton;
 import org.example.digitaldrawer.buttons.PenSizeDropDownList;
 
@@ -22,7 +23,7 @@ public final class TopPanel {
      */
     public HBox addHBox() {
         HBox hbox = new HBox();
-        hbox.setPadding(new Insets(15, 12, 15, 12));
+        hbox.setPadding(new Insets(15, 120, 15, 12));
         hbox.setSpacing(10);
         hbox.setStyle(BACKGROUND_COLOR);
         UnaryOperator<TextFormatter.Change> filter = change -> {
@@ -36,6 +37,8 @@ public final class TopPanel {
         chooseBrushButton.pressMouseResponse();
         DragAndDropButton dragAndDropButton = new DragAndDropButton();
         dragAndDropButton.pressMouseResponse();
+        ChooseTextButton chooseTextButton = new ChooseTextButton();
+        chooseTextButton.pressMouseResponse();
             TextFormatter<String> textFormatter = new TextFormatter<>(filter);
             PenSizeDropDownList.getPenSize().getEditor().setTextFormatter(textFormatter);
             PenSizeDropDownList.getPenSize().setEditable(true);
@@ -43,6 +46,7 @@ public final class TopPanel {
             hbox.getChildren().add(PenSizeDropDownList.getPenSize());
             hbox.getChildren().add(chooseBrushButton.getBrushButton());
             hbox.getChildren().add(dragAndDropButton.getDragAndDropButton());
+            hbox.getChildren().add(chooseTextButton.getTextButton());
         return hbox;
     }
 

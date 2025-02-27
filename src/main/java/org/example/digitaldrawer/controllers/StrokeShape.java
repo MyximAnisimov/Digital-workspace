@@ -12,15 +12,15 @@ public class StrokeShape {
     private final List<PathElement> elements;
     private double brushSize;
 
-    // Смещения: насколько весь штрих «сдвинут» от исходных координат
     private double offsetX;
     private double offsetY;
 
-    // Границы (bounding box)
     private double minX;
     private double minY;
     private double maxX;
     private double maxY;
+
+//    public StrokeShape(){}
 
     public StrokeShape(double brushSize) {
         this.brushSize = brushSize;

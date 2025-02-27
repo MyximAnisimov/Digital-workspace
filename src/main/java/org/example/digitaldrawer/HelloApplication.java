@@ -18,7 +18,7 @@ public class HelloApplication extends Application {
         border.setTop(userPanel.addHBox());
         Group root = new Group();
         Scene s = new Scene(root, 1000, 500, Color.WHITE);
-        CanvasController canvasController = new CanvasController(1000, 500);
+        CanvasController canvasController = new CanvasController(1000, 500, root);
         canvasController.pressMouseResponse();
         canvasController.dragMouseResponse();
 //        canvasController.createRectangleContainer(root);

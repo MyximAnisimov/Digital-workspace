@@ -12,7 +12,7 @@ public class DragAndDropButton implements PressOnMouseEvent{
     DropShadow shadow = new DropShadow();
 
     public DragAndDropButton() {
-        this.dragAndDropButton = new Button();
+        this.dragAndDropButton = new Button("DnD");
 
     }
 
