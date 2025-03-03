@@ -21,7 +21,6 @@ public class HelloApplication extends Application {
         CanvasController canvasController = new CanvasController(1000, 500, root);
         canvasController.pressMouseResponse();
         canvasController.dragMouseResponse();
-//        canvasController.createRectangleContainer(root);
         root.getChildren().add(canvasController);
         root.getChildren().add(border);
         stage.setScene(s);

@@ -5,6 +5,7 @@ import javafx.scene.Group;
 import javafx.scene.Scene;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
+import javafx.scene.control.Label;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
 import javafx.scene.input.MouseEvent;
@@ -32,10 +33,11 @@ public class CanvasController extends Canvas {
     private final GraphicsContext gc;
     private final Group root;
     private final List<StrokeShape> strokes = new ArrayList<>();
-    private final List<Text> allTextes = new ArrayList<>();
     private StrokeShape currentStroke = null;
-
+    private TextShape textShape = null;
+    private Label label = null;
     private StrokeShape selectedStroke = null;
+    private TextArea newTextField = null;
 
     private double dragOffsetX = 0;
     private double dragOffsetY = 0;
@@ -96,32 +98,12 @@ public class CanvasController extends Canvas {
                         break;
                     }
                 }
+                WriteTextController.changeTextFieldOnText(root, gc, mouseEvent.getX(), mouseEvent.getY());
             }
             else if(CanvasStateController.getState().equals(CanvasStates.TEXT_MODE.getStateName())){
-                TextField newTextField = new TextField();
-                newTextField.requestFocus();
-                newTextField.setLayoutX(mouseEvent.getX());
-                newTextField.setLayoutY(mouseEvent.getY());
-                newTextField.setOnAction(event->{
-                    String text = newTextField.getText();
-                    double x = newTextField.getLayoutX();
-                    double y = newTextField.getLayoutY();
-                    gc.setFill(Color.TRANSPARENT);
-                    gc.fillText(text, x, y);
-                });
-
-                newTextField.focusedProperty().addListener((observable, oldValue, newValue) ->{
-                    if(!newValue){
-                        String text = newTextField.getText();
-                        double x = newTextField.getLayoutX();
-                        double y = newTextField.getLayoutY();
-                        gc.setFill(Color.TRANSPARENT);
-                        gc.fillText(text, x, y);
-
-                    }
-                });
-                WriteTextController.addTextOnCanvas(root, newTextField);
-
+                textShape = new TextShape(new Label(""));
+                textShape.setMaxX(mouseEvent.getX());
+                textShape.setMaxY(mouseEvent.getY());
             }
         });
     }
@@ -157,6 +139,8 @@ public class CanvasController extends Canvas {
                     canvasRedrawer.redrawCanvas();
                 }
             }
+            else if(CanvasStateController.getState().equals(CanvasStates.TEXT_MODE.getStateName())){
+            }
 
         });
     }
@@ -170,13 +154,47 @@ public class CanvasController extends Canvas {
         this.addEventHandler(MouseEvent.MOUSE_RELEASED, mouseEvent -> {
             if (CanvasStateController.getState().equals(CanvasStates.BRUSH_MODE.getStateName())) {
                 if (currentStroke != null) {
-                    // Добавляем штрих в общий список
                     strokes.add(currentStroke);
                     currentStroke = null;
                 }
             } else if (CanvasStateController.getState().equals(CanvasStates.DRAG_AND_DROP_MODE.getStateName())) {
                 selectedStroke = null;
             }
+            else if(CanvasStateController.getState().equals(CanvasStates.TEXT_MODE.getStateName())){
+                newTextField = new TextArea();
+                newTextField.setWrapText(true);
+                newTextField.requestFocus();
+                newTextField.setLayoutY(textShape.getMaxY());
+                if(mouseEvent.getX() > textShape.getMaxX()){
+                    newTextField.setLayoutX(textShape.getMaxX());
+                    newTextField.setPrefWidth(mouseEvent.getX() - textShape.getMaxX());
+                    textShape.setMinX(textShape.getMaxX());
+                    textShape.setMaxX(mouseEvent.getX());
+                }
+                else if(mouseEvent.getX() > textShape.getMaxX()){
+                    newTextField.setLayoutX(mouseEvent.getX());
+                    newTextField.setPrefWidth(textShape.getMaxX() - mouseEvent.getX());
+                    textShape.setMinX(mouseEvent.getX());
+                    textShape.setMaxX(textShape.getMaxX());
+                }
+                if(mouseEvent.getY() > textShape.getMaxY()){
+                    newTextField.setPrefHeight(mouseEvent.getY() - textShape.getMaxY());
+                    textShape.setMinY(textShape.getMaxY());
+                    textShape.setMaxY(mouseEvent.getY());
+                }
+                else if(mouseEvent.getY() < textShape.getMaxY()){
+                    newTextField.setPrefHeight(textShape.getMaxY() - mouseEvent.getY());
+                    textShape.setMinY(mouseEvent.getY());
+                    textShape.setMaxY(textShape.getMaxY());
+                }
+
+                newTextField.setStyle("-fx-padding: 0 0 0 0; -fx-alignment: TOP_LEFT;");
+                label = new Label(newTextField.getText());
+                textShape = new TextShape(label);
+                WriteTextController.addTextOnCanvas(root, newTextField, this, textShape);
+                CanvasStateController.setState(CanvasStates.DRAG_AND_DROP_MODE.getStateName());
+            }
+
         });
     }
 
