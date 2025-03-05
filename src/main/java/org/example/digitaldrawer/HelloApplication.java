@@ -19,8 +19,6 @@ public class HelloApplication extends Application {
         Group root = new Group();
         Scene s = new Scene(root, 1000, 500, Color.WHITE);
         CanvasController canvasController = new CanvasController(1000, 500, root);
-        canvasController.pressMouseResponse();
-        canvasController.dragMouseResponse();
         root.getChildren().add(canvasController);
         root.getChildren().add(border);
         stage.setScene(s);

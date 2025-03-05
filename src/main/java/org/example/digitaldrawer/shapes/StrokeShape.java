@@ -1,4 +1,4 @@
-package org.example.digitaldrawer.controllers;
+package org.example.digitaldrawer.shapes;
 
 import javafx.scene.shape.LineTo;
 import javafx.scene.shape.MoveTo;
@@ -19,8 +19,6 @@ public class StrokeShape {
     private double minY;
     private double maxX;
     private double maxY;
-
-//    public StrokeShape(){}
 
     public StrokeShape(double brushSize) {
         this.brushSize = brushSize;

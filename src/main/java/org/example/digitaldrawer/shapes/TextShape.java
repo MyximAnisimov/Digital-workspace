@@ -1,4 +1,4 @@
-package org.example.digitaldrawer.controllers;
+package org.example.digitaldrawer.shapes;
 
 import javafx.scene.control.Label;
 
