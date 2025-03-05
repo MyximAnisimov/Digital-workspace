@@ -10,6 +10,8 @@ import javafx.scene.paint.Color;
 import javafx.scene.shape.LineTo;
 import javafx.scene.shape.MoveTo;
 import javafx.scene.transform.Affine;
+import org.example.digitaldrawer.controllers.handlers.BrushController;
+import org.example.digitaldrawer.shapes.StrokeShape;
 
 import java.util.List;
 
@@ -52,7 +54,7 @@ public class CanvasRedrawer {
         gc.setTransform(z, 0, 0, z, (w - w * z) / 2.0, (h - h * z) / 2.0);
 
         for (StrokeShape stroke : strokes) {
-            BrushSizeController.setBrushSize(gc, stroke.getBrushSize());
+            BrushController.setBrushSize(gc, stroke.getBrushSize());
             gc.setStroke(Color.BLACK);
 
             boolean firstMove = true;

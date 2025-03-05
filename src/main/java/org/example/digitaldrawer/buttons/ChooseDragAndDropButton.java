@@ -7,11 +7,11 @@ import javafx.scene.input.MouseEvent;
 import org.example.digitaldrawer.controllers.CanvasStateController;
 import org.example.digitaldrawer.states.CanvasStates;
 
-public class DragAndDropButton implements PressOnMouseEvent{
+public class ChooseDragAndDropButton implements PressOnMouseEvent{
     private Button dragAndDropButton;
     DropShadow shadow = new DropShadow();
 
-    public DragAndDropButton() {
+    public ChooseDragAndDropButton() {
         this.dragAndDropButton = new Button("DnD");
 
     }

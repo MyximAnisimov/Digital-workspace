@@ -1,45 +1,47 @@
 package org.example.digitaldrawer.controllers;
 
-import javafx.event.EventHandler;
 import javafx.scene.Group;
-import javafx.scene.Scene;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
-import javafx.scene.control.TextArea;
-import javafx.scene.control.TextField;
 import javafx.scene.input.MouseEvent;
-import javafx.scene.paint.Color;
-import javafx.scene.shape.LineTo;
-import javafx.scene.shape.MoveTo;
-import javafx.scene.text.Text;
 import javafx.scene.transform.Affine;
 import javafx.scene.transform.NonInvertibleTransformException;
 import org.example.digitaldrawer.buttons.PenSizeDropDownList;
+import org.example.digitaldrawer.controllers.functionalinterfaces.*;
+import org.example.digitaldrawer.controllers.handlers.BrushController;
+import org.example.digitaldrawer.controllers.handlers.DnDController;
+import org.example.digitaldrawer.controllers.handlers.TextController;
+import org.example.digitaldrawer.shapes.StrokeShape;
 import org.example.digitaldrawer.states.CanvasStates;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
+import java.util.function.BiConsumer;
+import java.util.function.Consumer;
 
 /**
  * Класс, отвечающий за холст пользователя
  */
 public class CanvasController extends Canvas {
-    private static final double DEFAULT_BRUSH_SIZE = 6.0;
-    private double brushSize = DEFAULT_BRUSH_SIZE;
     private final GraphicsContext gc;
     private final Group root;
     private final List<StrokeShape> strokes = new ArrayList<>();
-    private final List<Text> allTextes = new ArrayList<>();
-    private StrokeShape currentStroke = null;
+    private BrushController brushController = null;
+    private DnDController dnDController = null;
+    private TextController textController = null;
+    private CanvasRedrawer canvasRedrawer;
+    private HashMap<String, HashMap<String, Operations>> operations = new HashMap<>();
+    private HashMap<String, Operations> operationsForTextController = new HashMap<>();
+    private HashMap<String, Operations> operationsForBrushController = new HashMap<>();
+    private HashMap<String, Operations> operationsForDnDController = new HashMap<>();
+    BiConsumer<Double, Double> mousePressedForTextController;
+    QuadroFI<Double, Group, CanvasController> mouseReleasedForText;
+    TrioFI<Double, GraphicsContext> mouseDraggedForBrush;
+    TrioFI<Double, GraphicsContext> mousePressedForBrush;
+    TrioFI<Double, List<StrokeShape>> mousePresssedForDnD;
+    TrioFI<Double, CanvasRedrawer> mouseDraggedForDnd;
+    Consumer<List<StrokeShape>> mouseReleasedForBrush;
+    Runnable mouseReleasedForDnd;
 
-    private StrokeShape selectedStroke = null;
-
-    private double dragOffsetX = 0;
-    private double dragOffsetY = 0;
-    CanvasRedrawer canvasRedrawer;
 
     public CanvasController() {
         this(0, 0, null);
@@ -50,12 +52,25 @@ public class CanvasController extends Canvas {
         gc = this.getGraphicsContext2D();
         this.root = root;
         canvasRedrawer = new CanvasRedrawer(strokes, gc);
-        this.setOnScroll(canvasRedrawer.getZoomHandler());
-
+        setOnScroll(canvasRedrawer.getZoomHandler());
+        brushController = new BrushController();
+        dnDController = new DnDController();
+        textController = new TextController();
         PenSizeDropDownList.getPenSize().valueProperty().addListener((observable, oldValue, newValue) -> {
-            brushSize = BrushSizeController.setBrushSize(gc, Double.parseDouble(newValue));
+            BrushController.setBrushSize(gc, Double.parseDouble(newValue));
         });
-
+        mousePressedForTextController = textController::mousePressed;
+        mouseReleasedForText = textController::mouseReleased;
+        mouseDraggedForBrush = brushController::mouseDragged;
+        mousePressedForBrush = brushController::mousePressed;
+        mouseReleasedForBrush = brushController::mouseReleased;
+        mousePresssedForDnD = dnDController::mousePressed;
+        mouseReleasedForDnd = dnDController::mouseReleased;
+        mouseDraggedForDnd = dnDController::mouseDragged;
+        operationsForTextController.putAll(Map.of("textP", new BiArgsOperation<>(mousePressedForTextController), "textR", new QuadroArgsOperation<>(mouseReleasedForText)));
+        operationsForBrushController.putAll(Map.of("brushP", new TrioArgsOperation<>(mousePressedForBrush), "brushD", new TrioArgsOperation<>(mouseDraggedForBrush),"brushR", new UnaryArgsOperation<>(mouseReleasedForBrush)));
+        operationsForDnDController.putAll(Map.of("dndP", new TrioArgsOperation<>(mousePresssedForDnD), "dndR", new ZeroArgsOperation(mouseReleasedForDnd), "dndD", new TrioArgsOperation<>(mouseDraggedForDnd)));
+        operations.putAll(Map.of(CanvasStates.TEXT_MODE.getStateName(), operationsForTextController, CanvasStates.BRUSH_MODE.getStateName(), operationsForBrushController, CanvasStates.DRAG_AND_DROP_MODE.getStateName(), operationsForDnDController));
         pressMouseResponse();
         dragMouseResponse();
         releaseMouseResponse();
@@ -64,100 +79,42 @@ public class CanvasController extends Canvas {
     /**
      * При нажатии мыши выбираем логику в зависимости от состояния
      */
-    public void pressMouseResponse() {
+    private void pressMouseResponse() {
         this.addEventHandler(MouseEvent.MOUSE_PRESSED, mouseEvent -> {
-            if (CanvasStateController.getState().equals(CanvasStates.BRUSH_MODE.getStateName())) {
-                if (brushSize == DEFAULT_BRUSH_SIZE) {
-                    PenSizeDropDownList.getPenSize().getSelectionModel().select(0);
-                }
+            double[] transformedCoords = transformCoordinates(mouseEvent.getX(), mouseEvent.getY());
+            double transformedX = transformedCoords[0];
+            double transformedY = transformedCoords[1];
+            Optional.ofNullable(operations.get(CanvasStateController.getState()))
+                    .map(ops -> ops.get("textP"))
+                    .ifPresent(op -> ((BiArgsOperation) op).mousePressed(transformedX, transformedY));
 
-                double[] transformedCoords = transformCoordinates(mouseEvent.getX(), mouseEvent.getY());
-                double transformedX = transformedCoords[0];
-                double transformedY = transformedCoords[1];
+            Optional.ofNullable(operations.get(CanvasStateController.getState()))
+                    .map(ops -> ops.get("dndP"))
+                    .ifPresent(op -> ((TrioArgsOperation) op).mousePressed(transformedX, transformedY, strokes));
 
-                currentStroke = new StrokeShape(brushSize);
-                currentStroke.addElement(new MoveTo(transformedX, transformedY));
+            TextController.changeTextFieldOnText(root, gc, mouseEvent.getX(), mouseEvent.getY());
 
-                gc.beginPath();
-                gc.moveTo(transformedX, transformedY);
-                gc.stroke();
-
-            } else if (CanvasStateController.getState().equals(CanvasStates.DRAG_AND_DROP_MODE.getStateName())) {
-                double[] transformedCoords = transformCoordinates(mouseEvent.getX(), mouseEvent.getY());
-                double x = transformedCoords[0];
-                double y = transformedCoords[1];
-                selectedStroke = null;
-                for (int i = strokes.size() - 1; i >= 0; i--) {
-                    StrokeShape stroke = strokes.get(i);
-                    if (stroke.contains(x, y)) {
-                        selectedStroke = stroke;
-                        dragOffsetX = x - stroke.getOffsetX();
-                        dragOffsetY = y - stroke.getOffsetY();
-                        break;
-                    }
-                }
-            }
-            else if(CanvasStateController.getState().equals(CanvasStates.TEXT_MODE.getStateName())){
-                TextField newTextField = new TextField();
-                newTextField.requestFocus();
-                newTextField.setLayoutX(mouseEvent.getX());
-                newTextField.setLayoutY(mouseEvent.getY());
-                newTextField.setOnAction(event->{
-                    String text = newTextField.getText();
-                    double x = newTextField.getLayoutX();
-                    double y = newTextField.getLayoutY();
-                    gc.setFill(Color.TRANSPARENT);
-                    gc.fillText(text, x, y);
-                });
-
-                newTextField.focusedProperty().addListener((observable, oldValue, newValue) ->{
-                    if(!newValue){
-                        String text = newTextField.getText();
-                        double x = newTextField.getLayoutX();
-                        double y = newTextField.getLayoutY();
-                        gc.setFill(Color.TRANSPARENT);
-                        gc.fillText(text, x, y);
-
-                    }
-                });
-                WriteTextController.addTextOnCanvas(root, newTextField);
-
-            }
+            Optional.ofNullable(operations.get(CanvasStateController.getState()))
+                    .map(ops -> ops.get("brushP"))
+                    .ifPresent(op -> ((TrioArgsOperation) op).mousePressed(transformedX, transformedY, gc));
         });
     }
 
     /**
      * При перетаскивании мыши дорисовываем (в режиме кисти) либо перетаскиваем (в режиме Drag&Drop).
      */
-    public void dragMouseResponse() {
+    private void dragMouseResponse() {
         this.addEventHandler(MouseEvent.MOUSE_DRAGGED, mouseEvent -> {
-            if (CanvasStateController.getState().equals(CanvasStates.BRUSH_MODE.getStateName())) {
-                if (currentStroke != null) {
-                    double[] transformedCoords = transformCoordinates(mouseEvent.getX(), mouseEvent.getY());
-                    double transformedX = transformedCoords[0];
-                    double transformedY = transformedCoords[1];
+            double[] transformedCoords = transformCoordinates(mouseEvent.getX(), mouseEvent.getY());
+            double transformedX = transformedCoords[0];
+            double transformedY = transformedCoords[1];
+            Optional.ofNullable(operations.get(CanvasStateController.getState()))
+                    .map(ops -> ops.get(MouseEvent.MOUSE_DRAGGED))
+                    .ifPresent(op -> ((TrioArgsOperation) op).mousePressed(transformedX, transformedY, gc));
 
-                    currentStroke.addElement(new LineTo(transformedX, transformedY));
-
-                    gc.lineTo(transformedX, transformedY);
-                    gc.stroke();
-                }
-
-            } else if (CanvasStateController.getState().equals(CanvasStates.DRAG_AND_DROP_MODE.getStateName())) {
-                if (selectedStroke != null) {
-                    double[] transformedCoords = transformCoordinates(mouseEvent.getX(), mouseEvent.getY());
-                    double x = transformedCoords[0];
-                    double y = transformedCoords[1];
-
-                    double newOffsetX = x - dragOffsetX;
-                    double newOffsetY = y - dragOffsetY;
-
-                    selectedStroke.setOffsetX(newOffsetX);
-                    selectedStroke.setOffsetY(newOffsetY);
-                    canvasRedrawer.redrawCanvas();
-                }
-            }
-
+            Optional.ofNullable(operations.get(CanvasStateController.getState()))
+                    .map(ops -> ops.get("dndD"))
+                    .ifPresent(op -> ((TrioArgsOperation) op).mousePressed(transformedX, transformedY, canvasRedrawer));
         });
     }
 
@@ -168,15 +125,21 @@ public class CanvasController extends Canvas {
      */
     private void releaseMouseResponse() {
         this.addEventHandler(MouseEvent.MOUSE_RELEASED, mouseEvent -> {
-            if (CanvasStateController.getState().equals(CanvasStates.BRUSH_MODE.getStateName())) {
-                if (currentStroke != null) {
-                    // Добавляем штрих в общий список
-                    strokes.add(currentStroke);
-                    currentStroke = null;
-                }
-            } else if (CanvasStateController.getState().equals(CanvasStates.DRAG_AND_DROP_MODE.getStateName())) {
-                selectedStroke = null;
-            }
+            double[] transformedCoords = transformCoordinates(mouseEvent.getX(), mouseEvent.getY());
+            double transformedX = transformedCoords[0];
+            double transformedY = transformedCoords[1];
+            Optional.ofNullable(operations.get(CanvasStateController.getState()))
+                    .map(ops -> ops.get("brushR"))
+                    .ifPresent(op -> ((UnaryArgsOperation) op).mouseReleased(strokes));
+
+            Optional.ofNullable(operations.get(CanvasStateController.getState()))
+                    .map(ops -> ops.get("textR"))
+                    .ifPresent(op -> ((QuadroArgsOperation) op).mouseReleased(transformedX, transformedY, root, this));
+
+            Optional.ofNullable(operations.get(CanvasStateController.getState()))
+                    .map(ops -> ops.get("dndR"))
+                    .ifPresent(op -> ((ZeroArgsOperation) op).mouseReleased());
+
         });
     }
 

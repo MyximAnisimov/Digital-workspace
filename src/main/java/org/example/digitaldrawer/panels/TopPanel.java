@@ -5,7 +5,7 @@ import javafx.scene.control.TextFormatter;
 import javafx.scene.layout.HBox;
 import org.example.digitaldrawer.buttons.ChooseBrushButton;
 import org.example.digitaldrawer.buttons.ChooseTextButton;
-import org.example.digitaldrawer.buttons.DragAndDropButton;
+import org.example.digitaldrawer.buttons.ChooseDragAndDropButton;
 import org.example.digitaldrawer.buttons.PenSizeDropDownList;
 
 import java.util.function.UnaryOperator;
@@ -35,7 +35,7 @@ public final class TopPanel {
         };
         ChooseBrushButton chooseBrushButton = new ChooseBrushButton(ICON_URL_PATH);
         chooseBrushButton.pressMouseResponse();
-        DragAndDropButton dragAndDropButton = new DragAndDropButton();
+        ChooseDragAndDropButton dragAndDropButton = new ChooseDragAndDropButton();
         dragAndDropButton.pressMouseResponse();
         ChooseTextButton chooseTextButton = new ChooseTextButton();
         chooseTextButton.pressMouseResponse();
