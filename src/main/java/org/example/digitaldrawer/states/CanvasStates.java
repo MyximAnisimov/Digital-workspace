@@ -5,7 +5,7 @@ public enum CanvasStates {
     DRAG_AND_DROP_MODE("DnD mode"),
     TEXT_MODE("Text mode");
 
-    private String stateName;
+    private final String stateName;
     CanvasStates(String stateName){
         this.stateName = stateName;
     }

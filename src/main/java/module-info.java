@@ -21,4 +21,8 @@ module org.example.digitaldrawer {
     opens org.example.digitaldrawer.shapes to javafx.fxml;
     exports org.example.digitaldrawer.controllers.handlers;
     opens org.example.digitaldrawer.controllers.handlers to javafx.fxml;
+    exports org.example.digitaldrawer.controllers.canvassettings;
+    opens org.example.digitaldrawer.controllers.canvassettings to javafx.fxml;
+    exports org.example.digitaldrawer.storages;
+    opens org.example.digitaldrawer.storages to javafx.fxml;
 }

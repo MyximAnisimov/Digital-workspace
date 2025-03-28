@@ -4,22 +4,22 @@ import javafx.scene.Group;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextArea;
-import org.example.digitaldrawer.controllers.CanvasController;
-import org.example.digitaldrawer.controllers.CanvasStateController;
+import org.example.digitaldrawer.controllers.EventHandlers;
+import org.example.digitaldrawer.controllers.canvassettings.CanvasStateController;
 import org.example.digitaldrawer.shapes.TextShape;
 import org.example.digitaldrawer.states.CanvasStates;
 
 import java.util.HashMap;
 import java.util.Map;
 
-public class TextController extends AbstractController {
+public class TextController{
     private static final HashMap<TextShape, TextArea> activeAndPassiveTexts = new HashMap<>();
     private TextShape textShape = null;
     private Label label = null;
     private TextArea newTextField = null;
 
 
-    public static void addTextOnCanvas(Group root, TextArea textField, CanvasController canvasController, TextShape textShape) {
+    public static void addTextOnCanvas(Group root, TextArea textField, TextShape textShape) {
         activeAndPassiveTexts.put(textShape, textField);
         root.getChildren().add(textField);
     }
@@ -34,19 +34,32 @@ public class TextController extends AbstractController {
      */
     public static void changeTextFieldOnText(Group root, GraphicsContext gc, double x, double y){
         for(Map.Entry<TextShape, TextArea> element : activeAndPassiveTexts.entrySet()) {
+
             root.getChildren().remove(element.getValue());
             gc.fillText(element.getValue().getText(), x, y);
         }
     }
 
-    public void mousePressed(double x, double y){
+    public static void changeFiledOnText(Group root, GraphicsContext gc, double x, double y){
+        for(Map.Entry<TextShape, TextArea> element : activeAndPassiveTexts.entrySet()) {
+//            TextArea textArea = new TextArea();
+//            textArea.setText(element.getValue().getText());
+
+            root.getChildren().add(element.getValue());
+//            gc.fillText(element.getValue().getText(), x, y);
+        }
+    }
+
+    public void mousePressed(double x, double y, double[] arr){
         textShape = new TextShape(new Label(""));
         textShape.setMaxX(x);
         textShape.setMaxY(y);
+        arr[0] = x;
+        arr[1] = y;
     }
     public void mouseDragged(){}
 
-    public void mouseReleased(double x, double y, Group root, CanvasController canvasController){
+    public void mouseReleased(double x, double y, Group root, EventHandlers canvasController){
         newTextField = new TextArea();
         newTextField.setWrapText(true);
         newTextField.requestFocus();
@@ -79,7 +92,7 @@ public class TextController extends AbstractController {
         newTextField.setStyle("-fx-padding: 0 0 0 0; -fx-alignment: TOP_LEFT;");
         label = new Label(newTextField.getText());
         textShape = new TextShape(label);
-        TextController.addTextOnCanvas(root, newTextField, canvasController, textShape);
+        TextController.addTextOnCanvas(root, newTextField, textShape);
         CanvasStateController.setState(CanvasStates.DRAG_AND_DROP_MODE.getStateName());
     }
 }

@@ -1,4 +1,4 @@
-package org.example.digitaldrawer.controllers;
+package org.example.digitaldrawer.controllers.canvassettings;
 
 import javafx.beans.property.DoubleProperty;
 import javafx.beans.property.SimpleDoubleProperty;
@@ -44,7 +44,6 @@ public class CanvasRedrawer {
         if (gc == null) {
             return;
         }
-
         Canvas canvas = gc.getCanvas();
         double w = canvas.getWidth();
         double h = canvas.getHeight();

@@ -4,7 +4,6 @@ import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.shape.LineTo;
 import javafx.scene.shape.MoveTo;
 import org.example.digitaldrawer.buttons.PenSizeDropDownList;
-//import org.example.digitaldrawer.controllers.functionalinterfaces.MainFI;
 import org.example.digitaldrawer.errors.ErrorTypes;
 import org.example.digitaldrawer.panels.ErrorPanel;
 import org.example.digitaldrawer.shapes.StrokeShape;
@@ -12,7 +11,7 @@ import org.example.digitaldrawer.shapes.StrokeShape;
 import java.util.List;
 import java.util.Map;
 
-public class BrushController extends AbstractController {
+public class BrushController {
 
     private static final double DEFAULT_BRUSH_SIZE = 6.0;
     private static final double BRUSH_SIZE_LIMIT = 100;

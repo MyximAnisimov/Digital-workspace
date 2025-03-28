@@ -5,7 +5,7 @@ import javafx.scene.control.Button;
 import javafx.scene.effect.DropShadow;
 import javafx.scene.image.Image;
 import javafx.scene.input.MouseEvent;
-import org.example.digitaldrawer.controllers.CanvasStateController;
+import org.example.digitaldrawer.controllers.canvassettings.CanvasStateController;
 import org.example.digitaldrawer.states.CanvasStates;
 
 /**

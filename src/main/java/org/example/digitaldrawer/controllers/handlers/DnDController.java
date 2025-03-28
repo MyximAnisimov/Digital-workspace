@@ -1,11 +1,11 @@
 package org.example.digitaldrawer.controllers.handlers;
 
-import org.example.digitaldrawer.controllers.CanvasRedrawer;
+import org.example.digitaldrawer.controllers.canvassettings.CanvasRedrawer;
 import org.example.digitaldrawer.shapes.StrokeShape;
 
 import java.util.List;
 
-public class DnDController extends AbstractController {
+public class DnDController {
 
     private StrokeShape selectedStroke = null;
     private double dragOffsetX = 0;

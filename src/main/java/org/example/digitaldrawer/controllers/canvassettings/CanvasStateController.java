@@ -1,4 +1,4 @@
-package org.example.digitaldrawer.controllers;
+package org.example.digitaldrawer.controllers.canvassettings;
 
 import org.example.digitaldrawer.states.CanvasStates;
 
